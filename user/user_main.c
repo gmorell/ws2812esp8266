@@ -6,6 +6,12 @@
 #include "osapi.h"
 #include "espconn.h"
 #include "mystuff.h"
+#include <string.h>
+
+#include "gpio.h"
+#include "os_type.h"
+
+#include "user_config.h"
 
 #define PORT 7777
 #define SERVER_TIMEOUT 1000
@@ -77,11 +83,26 @@ void ICACHE_FLASH_ATTR at_recvTask()
 void user_init(void)
 {
 	uart_init(BIT_RATE_115200, BIT_RATE_115200);
-	int wifiMode = wifi_get_opmode();
-
-	uart0_sendStr("\r\nCustom Server\r\n");
-
-	wifi_set_opmode( 2 ); //We broadcast our ESSID, wait for peopel to join.
+        
+        uart0_sendStr("\r\nCustom Server\r\n");
+        
+        char ssid[32] = WIFI_USER;
+        char password[64] = WIFI_PASS;
+        
+        struct station_config stconf;
+        
+        wifi_set_opmode(0x1);
+        
+        // this is necessary, see: http://41j.com/blog/2015/01/esp8266-wifi-doesnt-connect/
+        stconf.bssid_set = 0;
+        
+        
+        os_memcpy((char *)stconf.ssid,ssid, 32);
+        os_memcpy((char *)stconf.password,password, 64);
+        
+        wifi_station_set_config(&stconf);
+        wifi_station_set_auto_connect(1);
+        
 
     pUdpServer = (struct espconn *)os_zalloc(sizeof(struct espconn));
 	ets_memset( pUdpServer, 0, sizeof( struct espconn ) );
@@ -91,7 +112,6 @@ void user_init(void)
 	pUdpServer->proto.udp->local_port = 7777;
 	espconn_regist_recvcb(pUdpServer, udpserver_recv);
 
-	wifi_station_dhcpc_start();
 
 	if( espconn_create( pUdpServer ) )
 	{
@@ -106,7 +126,7 @@ void user_init(void)
 
 	//Add a process
 	system_os_task(procTask, procTaskPrio, procTaskQueue, procTaskQueueLen);
-
+        
 	uart0_sendStr("\r\nCustom Server\r\n");
 	WS2812OutBuffer( outbuffer, sizeof(outbuffer) );
 

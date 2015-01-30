@@ -3,20 +3,12 @@ FW_FILE_1:=0x00000.bin
 FW_FILE_2:=0x40000.bin
 
 TARGET_OUT:=image.elf
-OBJS:=driver/uart.o \
-	user/mystuff.o \
-	user/ws2812.o \
+OBJS:=user/ws2812.o \
 	user/user_main.o
 
-SRCS:=driver/uart.c \
-	user/mystuff.c \
-	user/ws2812.c \
+SRCS:=user/ws2812.c \
 	user/user_main.c 
 
-# GCC_FOLDER:=~/esp8266/xtensa-toolchain-build/build-lx106
-# ESPTOOL_PY:=~/esp8266/esptool/esptool.py
-# FW_TOOL:=~/esp8266/other/esptool/esptool
-# SDK:=/home/cnlohr/esp8266/esp_iot_sdk_v0.9.3
 GCC_FOLDER:=/opt/Espressif/crosstool-NG/builds/xtensa-lx106-elf
 ESPTOOL_PY:=/opt/Espressif/esptool-py/esptool.py
 FW_TOOL:=/opt/Espressif/esptool/esptool
@@ -31,10 +23,7 @@ FOLDERPREFIX:=$(GCC_FOLDER)/bin
 PREFIX:=$(FOLDERPREFIX)/xtensa-lx106-elf-
 CC:=$(PREFIX)gcc
 
-CFLAGS:=-mlongcalls -I$(SDK)/include -Imyclib -Iinclude -Iuser -Os -I$(SDK)/include/
-
-#	   \
-#
+CFLAGS:=-mlongcalls -I$(SDK)/include -Imyclib -Iinclude -Iuser -O2 -I$(SDK)/include/
 
 LDFLAGS_CORE:=\
 	-nostdlib \
@@ -58,13 +47,8 @@ LINKFLAGS:= \
 	$(LDFLAGS_CORE) \
 	-B$(XTLIB)
 
-#image.elf : $(OBJS)
-#	$(PREFIX)ld $^ $(LDFLAGS) -o $@
-
 $(TARGET_OUT) : $(SRCS)
 	$(PREFIX)gcc $(CFLAGS) $^  -flto $(LINKFLAGS) -o $@
-
-
 
 $(FW_FILE_1): $(TARGET_OUT)
 	@echo "FW $@"
@@ -77,8 +61,7 @@ $(FW_FILE_2): $(TARGET_OUT)
 burn : $(FW_FILE_1) $(FW_FILE_2)
 	($(ESPTOOL_PY) --port /dev/ttyUSB0 write_flash 0x00000 0x00000.bin 0x40000 0x40000.bin)||(true)
 
-
 clean :
-	rm -rf user/*.o driver/*.o $(TARGET_OUT) $(FW_FILE_1) $(FW_FILE_2)
+	rm -rf user/*.o $(TARGET_OUT) $(FW_FILE_1) $(FW_FILE_2)
 
 

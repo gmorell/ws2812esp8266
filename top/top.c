@@ -1,6 +1,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 
@@ -110,6 +111,7 @@ int main( int argc, char ** argv )
 	while(1)
 	{
 //#define lights 186
+                sleep(1);
 		uint8_t buffer[lights*3];
 		int i;
 		for( i = 0; i < lights; i++ )

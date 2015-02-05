@@ -59,7 +59,7 @@ $(FW_FILE_2): $(TARGET_OUT)
 	$(FW_TOOL) -eo $(TARGET_OUT) -es .irom0.text $@ -ec
 
 burn : $(FW_FILE_1) $(FW_FILE_2)
-	($(ESPTOOL_PY) --port /dev/ttyUSB0 write_flash 0x00000 0x00000.bin 0x40000 0x40000.bin)||(true)
+	($(ESPTOOL_PY) --port /dev/ttyAMA0 write_flash 0x00000 0x00000.bin 0x40000 0x40000.bin)||(true)
 
 clean :
 	rm -rf user/*.o $(TARGET_OUT) $(FW_FILE_1) $(FW_FILE_2)
